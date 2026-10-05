@@ -1,0 +1,34 @@
+SHIFTPAY: HOW TO PUT IT ONLINE (free, no coding)
+
+This folder is the whole app. It doesn't use Claude or any account.
+Each person's hours save only on their own phone.
+
+OPTION A: NETLIFY DROP (about 5 minutes)
+1. On a computer, unzip this folder.
+2. Go to app.netlify.com/drop
+3. Drag the "shiftpay" folder onto the page.
+4. You get a link like random-name-123.netlify.app
+5. Sign up for a free Netlify account and "claim" the site so it stays up.
+   In Site settings you can rename it, e.g. shiftpay-calc.netlify.app
+
+OPTION B: GITHUB PAGES (about 15 minutes)
+1. Make a free account at github.com
+2. New repository -> name it "shiftpay" -> Public -> Create.
+3. Click "uploading an existing file" -> drag in everything inside this folder -> Commit.
+4. Settings -> Pages -> Source: "Deploy from a branch" -> main -> / (root) -> Save.
+5. In a minute or two your app is at  yourname.github.io/shiftpay
+
+PUT IT ON YOUR PHONE'S HOME SCREEN
+iPhone: open the link in Safari -> Share -> Add to Home Screen.
+Android: open the link in Chrome -> menu (3 dots) -> Add to Home screen / Install app.
+
+LOAD YOUR OWN HOURS
+In the app: History -> Backup -> Open backup file (or paste your code) -> Load.
+
+EACH JANUARY (new tax year)
+1. Open index.html in a plain text editor (Notepad on Windows; TextEdit set to plain text on Mac).
+2. Near the top, under "TAX DATA", update TAX_YEAR, the brackets and std
+   (standard deduction) for each filing status, childCredit, and any state rates.
+3. Open sw.js and change VERSION (for example "shiftpay-2027-v1").
+4. Upload the folder again the same way. Everyone's phone picks it up
+   the next time they open the app, and their saved hours stay put.
