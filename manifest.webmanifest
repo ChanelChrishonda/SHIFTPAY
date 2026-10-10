@@ -1,6 +1,6 @@
 {
-  "name": "ShiftPay",
-  "short_name": "ShiftPay",
+  "name": "ShiftWorkPay",
+  "short_name": "ShiftWorkPay",
   "description": "Log your shift hours and see your paycheck before payday.",
   "start_url": "./",
   "scope": "./",
