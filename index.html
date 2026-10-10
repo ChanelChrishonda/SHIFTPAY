@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Shift Pay Tracker</title>
+<title>ShiftWorkPay</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17324D">
 <meta name="description" content="Log your shift hours and see your paycheck before payday.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ShiftPay">
+<meta name="apple-mobile-web-app-title" content="ShiftWorkPay">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -157,19 +157,63 @@ nav.tabs button{border:none;background:none;padding:6px 0;border-radius:10px;fon
 nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 nav.tabs button[aria-current="page"]{color:var(--fg);background:var(--surface-2)}
 nav.tabs button[aria-current="page"] svg{stroke:var(--accent)}
-@media (max-width:420px){.fields{grid-template-columns:repeat(4,1fr)}.row{grid-template-columns:1fr 128px}.hero .net{font-size:38px}}
+@media (max-width:420px){.row{grid-template-columns:1fr 128px}.hero .net{font-size:38px}}
+.fields{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.f label{white-space:normal!important;line-height:1.2;min-height:2.4em;display:flex;align-items:flex-end}
 @media (prefers-reduced-motion:no-preference){.editor{animation:drop .16s ease-out}@keyframes drop{from{opacity:.4;transform:translateY(-4px)}}}
+/* v2: month jump, pay types, leave */
+.dates-btn{background:none;border:none;color:var(--on-navy);padding:0;font:inherit;display:inline-flex;align-items:center;gap:6px}
+.dates-btn .caret{font-size:12px;opacity:.75;transition:transform .15s}
+.dates-btn[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.jump{max-width:640px;margin:10px auto 0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:10px 12px}
+.jump-yr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.jump-yr b{font-family:var(--f-display);font-size:18px;letter-spacing:.04em}
+.jump-yr button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--on-navy);font-size:18px}
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.months button{position:relative;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--on-navy);border-radius:8px;padding:8px 0;font-weight:600;font-size:14px}
+.months button.cur{background:var(--accent);border-color:var(--accent);color:#1a1205}
+.months button i{position:absolute;top:4px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.months button.cur i{background:#1a1205}
+.jump-date{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px}
+.jump-date input{background:rgba(255,255,255,.95);color:#14202E;border:none;max-width:170px}
+.ptype{border-top:1px solid var(--line);padding:10px 0}
+.ptype:first-of-type{border-top:none}
+.ptype-main{display:grid;grid-template-columns:1fr 66px 52px 64px;gap:6px;align-items:center}
+.ptype-flags{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px}
+.ptype-flags label{display:flex;gap:5px;align-items:center}
+.ptype-flags input[type=checkbox]{width:auto}
+.ptype-flags select{width:auto;padding:3px 6px;font-size:12px}
+.ptype-flags .rate{margin-left:auto;font-family:var(--f-num);color:var(--fg);font-size:13px}
+.ptype.hidden-type .ptype-main input{opacity:.55}
+.ph{display:grid;grid-template-columns:1fr 66px 52px 64px;gap:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.bank{display:grid;gap:10px}
+.bank-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.bank-top h3{margin:0;font-family:var(--f-display);font-size:20px;font-weight:600;letter-spacing:.03em}
+.bank-bal{font-family:var(--f-num);font-size:30px;font-weight:600;line-height:1}
+.bank-bal small{font-size:13px;color:var(--muted);font-weight:500}
+.bank-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bank-stats div{background:var(--surface-2);border-radius:8px;padding:7px 8px}
+.bank-stats .v{font-family:var(--f-num);font-weight:600;font-size:14px}
+.bank-stats .l{font-size:11px;color:var(--muted)}
+.neg{color:var(--tax)}
+nav.tabs div{grid-template-columns:repeat(5,1fr)!important}
+nav.tabs button{font-size:13.5px!important}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <div class="brand"><h1>Shift<b>Pay</b></h1><span class="save" id="saveState">Loading…</span></div>
+  <div class="brand"><h1>ShiftWork<b>Pay</b></h1><span class="save" id="saveState">Loading…</span></div>
   <div class="period">
     <button class="arrow" id="prev" aria-label="Previous pay period">‹</button>
-    <div class="lbl"><div class="dates" id="pDates">—</div><div class="pay" id="pPay"></div><button class="today-btn" id="todayBtn" hidden>Jump to current period</button></div>
+    <div class="lbl">
+      <button class="dates-btn" id="datesBtn" aria-expanded="false" aria-controls="jump"><span class="dates" id="pDates">—</span><span class="caret" aria-hidden="true">▼</span></button>
+      <div class="pay" id="pPay"></div>
+      <button class="today-btn" id="todayBtn" hidden>Jump to current period</button>
+    </div>
     <button class="arrow" id="next" aria-label="Next pay period">›</button>
   </div>
+  <div class="jump" id="jump" hidden></div>
 </header>
 
 <main id="main"></main>
@@ -177,6 +221,7 @@ nav.tabs button[aria-current="page"] svg{stroke:var(--accent)}
 <nav class="tabs" aria-label="Sections"><div>
   <button data-tab="check" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Check</button>
   <button data-tab="hours"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Hours</button>
+  <button data-tab="leave"><svg viewBox="0 0 24 24"><path d="M5 20V9l7-5 7 5v11z"/><path d="M9 20v-6h6v6"/></svg>Leave</button>
   <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M4 19h16M7 16V10M12 16V6M17 16v-4"/></svg>History</button>
   <button data-tab="setup"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Setup</button>
 </div></nav>
@@ -194,59 +239,156 @@ const FED = {
 const STATES = {"Alabama":.04,"Alaska":0,"Arizona":.025,"Arkansas":.039,"California":.05,"Colorado":.044,"Connecticut":.05,"Delaware":.05,"District of Columbia":.06,"Florida":0,"Georgia":.0519,"Hawaii":.07,"Idaho":.053,"Illinois":.0495,"Indiana":.0295,"Iowa":.038,"Kansas":.052,"Kentucky":.035,"Louisiana":.03,"Maine":.06,"Maryland":.0475,"Massachusetts":.05,"Michigan":.0425,"Minnesota":.06,"Mississippi":.044,"Missouri":.045,"Montana":.055,"Nebraska":.05,"Nevada":0,"New Hampshire":0,"New Jersey":.045,"New Mexico":.045,"New York":.055,"North Carolina":.0399,"North Dakota":.015,"Ohio":.0275,"Oklahoma":.045,"Oregon":.08,"Pennsylvania":.0307,"Rhode Island":.0475,"South Carolina":.05,"South Dakota":0,"Tennessee":0,"Texas":0,"Utah":.045,"Vermont":.06,"Virginia":.05,"Washington":0,"West Virginia":.045,"Wisconsin":.053,"Wyoming":0};
 const FLAT = new Set(["Arizona","Colorado","Idaho","Illinois","Indiana","Iowa","Kentucky","Louisiana","Michigan","North Carolina","Pennsylvania","Utah","Massachusetts","Ohio","Georgia","Mississippi"]);
 const NO_TAX = new Set(Object.keys(STATES).filter(s=>STATES[s]===0));
+/* Reciprocity: work state -> home states whose residents can have ONLY their home state withheld (after filing the form). */
+const RECIP = {
+  "Arizona":["California","Indiana","Oregon","Virginia"], "District of Columbia":["Maryland","Virginia"],
+  "Illinois":["Iowa","Kentucky","Michigan","Wisconsin"], "Indiana":["Kentucky","Michigan","Ohio","Pennsylvania","Wisconsin"],
+  "Iowa":["Illinois"], "Kentucky":["Illinois","Indiana","Michigan","Ohio","Virginia","West Virginia","Wisconsin"],
+  "Maryland":["District of Columbia","Pennsylvania","Virginia","West Virginia"], "Michigan":["Illinois","Indiana","Kentucky","Minnesota","Ohio","Wisconsin"],
+  "Minnesota":["Michigan","North Dakota"], "Montana":["North Dakota"], "New Jersey":["Pennsylvania"], "North Dakota":["Minnesota","Montana"],
+  "Ohio":["Indiana","Kentucky","Michigan","Pennsylvania","West Virginia"], "Pennsylvania":["Indiana","Maryland","New Jersey","Ohio","Virginia","West Virginia"],
+  "Virginia":["District of Columbia","Kentucky","Maryland","Pennsylvania","West Virginia"], "West Virginia":["Kentucky","Maryland","Ohio","Pennsylvania","Virginia"],
+  "Wisconsin":["Illinois","Indiana","Kentucky","Michigan"]
+};
+const RECIP_FORM = {"Arizona":"WEC","District of Columbia":"D-4A","Illinois":"IL-W-5-NR","Indiana":"WH-47","Iowa":"44-016","Kentucky":"42A809","Maryland":"MW507","Michigan":"MI-W4","Minnesota":"MWR","Montana":"MW-4","New Jersey":"NJ-165","North Dakota":"NDW-R","Ohio":"IT 4NR","Pennsylvania":"REV-419","Virginia":"VA-4","West Virginia":"WV/IT-104NR","Wisconsin":"W-220"};
 
-/* ===================== PAY TYPES ===================== */
-const TYPES = [
-  {k:"reg", label:"Regular", short:"Reg", worked:true},
-  {k:"ot",  label:"Overtime", short:"OT", worked:true},
-  {k:"dt",  label:"Double time", short:"DT", worked:true},
-  {k:"hw",  label:"Holiday worked", short:"Hol wk", worked:true},
-  {k:"hot", label:"Holiday OT", short:"Hol OT", worked:true},
-  {k:"prem",label:"Premium", short:"Prem", worked:false},
-  {k:"hp",  label:"Paid holiday", short:"Hol pd", worked:false},
-  {k:"lv",  label:"Sick/Comp/Vac", short:"Leave", worked:false},
+/* ===================== PAY TYPES (defaults — each person can rename, change, hide or add) =====================
+   kind "mult" = base rate × val;  kind "flat" = val dollars per hour.
+   worked = counts toward hours worked (overtime).  bank = leave bank these hours are taken from.
+   earn = leave bank these hours are added to, at earnRate (comp time banked instead of paid). */
+function defaultTypes(){
+  return [
+    {k:"reg", label:"Regular", short:"Reg", kind:"mult", val:1,   worked:true,  show:true},
+    {k:"ot",  label:"Overtime", short:"OT", kind:"mult", val:1.5, worked:true,  show:true},
+    {k:"dt",  label:"Double time", short:"DT", kind:"mult", val:2, worked:true, show:true},
+    {k:"hw",  label:"Holiday worked", short:"Hol wk", kind:"mult", val:1.5, worked:true, show:true},
+    {k:"hot", label:"Holiday OT", short:"Hol OT", kind:"mult", val:2, worked:true, show:true},
+    {k:"prem",label:"Premium", short:"Prem", kind:"flat", val:1, worked:false, show:true},
+    {k:"hp",  label:"Paid holiday", short:"Hol pd", kind:"mult", val:1, worked:false, show:true},
+    {k:"vac", label:"Vacation used", short:"Vac", kind:"mult", val:1, worked:false, show:true, bank:"vac"},
+    {k:"sick",label:"Sick used", short:"Sick", kind:"mult", val:1, worked:false, show:true, bank:"sick"},
+    {k:"pers",label:"Personal used", short:"Pers", kind:"mult", val:1, worked:false, show:true, bank:"pers"},
+    {k:"cu",  label:"Comp time used", short:"Comp", kind:"mult", val:1, worked:false, show:true, bank:"comp"},
+    {k:"ce",  label:"OT banked as comp", short:"Comp+", kind:"mult", val:0, worked:true, show:true, earn:"comp", earnRate:1.5},
+    {k:"lv",  label:"Sick/Comp/Vac (older entries)", short:"Leave", kind:"mult", val:1, worked:false, show:false},
+  ];
+}
+function defaultBanks(asOf){
+  return [
+    {id:"vac", name:"Vacation", start:0, asOf, accrual:0, max:""},
+    {id:"sick",name:"Sick", start:0, asOf, accrual:0, max:""},
+    {id:"pers",name:"Personal", start:0, asOf, accrual:0, max:""},
+    {id:"comp",name:"Comp time", start:0, asOf, accrual:0, max:""},
+  ];
+}
+/* Pay type library: everything a person can add from Setup → Pay types → + Add pay type. */
+const LIBRARY = [
+  {g:"Hours worked", items:[
+    {k:"reg", label:"Regular", short:"Reg", kind:"mult", val:1, worked:true},
+    {k:"ot",  label:"Overtime", short:"OT", kind:"mult", val:1.5, worked:true},
+    {k:"dt",  label:"Double time", short:"DT", kind:"mult", val:2, worked:true},
+    {k:"tt",  label:"Triple time", short:"TT", kind:"mult", val:3, worked:true},
+    {k:"hw",  label:"Holiday worked", short:"Hol wk", kind:"mult", val:1.5, worked:true},
+    {k:"hot", label:"Holiday OT", short:"Hol OT", kind:"mult", val:2, worked:true},
+    {k:"hold",label:"Holdover / mandatory OT", short:"Hold", kind:"mult", val:1.5, worked:true},
+    {k:"cb",  label:"Call-back", short:"Call-bk", kind:"mult", val:1.5, worked:true},
+    {k:"court",label:"Court time", short:"Court", kind:"mult", val:1.5, worked:true},
+    {k:"train",label:"Training hours", short:"Train", kind:"mult", val:1, worked:true},
+    {k:"meal",label:"Missed meal break", short:"Meal", kind:"mult", val:1.5, worked:true},
+    {k:"ce",  label:"OT banked as comp", short:"Comp+", kind:"mult", val:0, worked:true, earn:"comp", earnRate:1.5},
+  ]},
+  {g:"Extra pay per hour (differentials)", items:[
+    {k:"prem",label:"Premium", short:"Prem", kind:"flat", val:1, worked:false},
+    {k:"sde", label:"Evening shift differential", short:"Eve", kind:"flat", val:1, worked:false},
+    {k:"sdn", label:"Night shift differential", short:"Night", kind:"flat", val:1.5, worked:false},
+    {k:"wkd", label:"Weekend differential", short:"Wknd", kind:"flat", val:1, worked:false},
+    {k:"cto", label:"Training officer (CTO/FTO) pay", short:"CTO", kind:"flat", val:1, worked:false},
+    {k:"acting",label:"Acting supervisor / lead pay", short:"Acting", kind:"flat", val:2, worked:false},
+    {k:"bil", label:"Bilingual pay", short:"Biling", kind:"flat", val:1, worked:false},
+    {k:"oncall",label:"On-call / standby", short:"On-call", kind:"flat", val:2, worked:false},
+  ]},
+  {g:"Paid time off", items:[
+    {k:"hp",  label:"Paid holiday", short:"Hol pd", kind:"mult", val:1, worked:false},
+    {k:"fh",  label:"Floating holiday", short:"Float", kind:"mult", val:1, worked:false},
+    {k:"bday",label:"Birthday holiday", short:"B-day", kind:"mult", val:1, worked:false},
+    {k:"vac", label:"Vacation used", short:"Vac", kind:"mult", val:1, worked:false, bank:"vac"},
+    {k:"sick",label:"Sick used", short:"Sick", kind:"mult", val:1, worked:false, bank:"sick"},
+    {k:"pers",label:"Personal used", short:"Pers", kind:"mult", val:1, worked:false, bank:"pers"},
+    {k:"cu",  label:"Comp time used", short:"Comp", kind:"mult", val:1, worked:false, bank:"comp"},
+    {k:"ber", label:"Bereavement", short:"Bereav", kind:"mult", val:1, worked:false},
+    {k:"jury",label:"Jury duty", short:"Jury", kind:"mult", val:1, worked:false},
+    {k:"mil", label:"Military leave", short:"Mil", kind:"mult", val:1, worked:false},
+    {k:"adm", label:"Administrative leave", short:"Admin", kind:"mult", val:1, worked:false},
+    {k:"lv",  label:"Sick/Comp/Vac (older entries)", short:"Leave", kind:"mult", val:1, worked:false},
+  ]},
+  {g:"Unpaid", items:[
+    {k:"nopay",label:"Unpaid time off", short:"No pay", kind:"mult", val:0, worked:false},
+  ]},
 ];
+let pickerOpen=false, pendingDel=null;
 
 /* ===================== STATE ===================== */
 const EXAMPLE = () => {
   const s = defaultSetup();
   s.example = true;
   const start = currentPeriodStart(s, new Date());
+  s.banks=defaultBanks(iso(addDays(start,-1)));
+  s.banks[0].start=40; s.banks[0].accrual=4.62; s.banks[1].start=24; s.banks[1].accrual=3.69; s.banks[2].start=8; s.banks[3].start=6;
   const hours = {};
-  const pat = [{reg:8,ot:4},{reg:8,ot:4},{},{ot:12},{reg:8},{reg:8,ot:4},{},{reg:8},{reg:8,ot:4},{lv:8},{},{ot:12},{reg:8,ot:4},{reg:8}];
+  const pat = [{reg:8,ot:4},{reg:8,ot:4},{},{ot:12},{reg:8},{reg:8,ce:4},{},{reg:8},{reg:8,ot:4},{vac:8},{},{ot:12},{reg:8,ot:4},{reg:8}];
   pat.forEach((h,i)=>{ if(Object.keys(h).length) hours[iso(addDays(start,i))]=h; });
-  return {v:1, setup:s, hours, example:true};
+  return {v:2, setup:s, hours, example:true};
 };
 function defaultSetup(){
   return {
-    rate:25.00, mult:{reg:1,ot:1.5,dt:2,hw:1.5,hot:2,hp:1,lv:1}, prem:1.00,
+    rate:25.00, types:defaultTypes(), banks:defaultBanks(iso(new Date())),
     freq:26, anchor:"2026-07-27", payLag:15,
     status:"single", step2:false, kids:0, others:0, s4a:0, s4b:0, s4c:0, exempt:false,
     state:"Indiana", stateOverride:"", county:"Lake County", countyRate:0.015,
     inPersonal:1, inAddl:0, inAdopt:0, stateExtra:0, countyExtra:0,
+    step3amt:"", countyUsesExempt:true, imputed:0, homeState:"", homeWithhold:false,
     deds:[{name:"Medical",amount:79,type:"$",preInc:true,preFica:true},{name:"Union dues",amount:69,type:"$",preInc:false,preFica:false}]
   };
 }
-let S = null;           // full app state
+/* Bring older saved data (v1) up to date without losing anything */
+function normalize(st){
+  const d=defaultSetup(); const s={...d,...st.setup};
+  if(!Array.isArray(s.types)){
+    const m=st.setup.mult||{}; const t=defaultTypes();
+    t.forEach(x=>{ if(x.kind==="mult"&&m[x.k]!=null) x.val=+m[x.k]; if(x.k==="prem"&&st.setup.prem!=null) x.val=+st.setup.prem; });
+    s.types=t;
+  }
+  if(!Array.isArray(s.banks)) s.banks=defaultBanks(iso(new Date()));
+  delete s.mult; delete s.prem;
+  const usesLv=Object.values(st.hours||{}).some(h=>+h.lv);
+  s.types.forEach(t=>{ if(t.k==="lv"&&usesLv) t.show=true; });
+  return {v:2, setup:s, hours:st.hours||{}, skip:st.skip||{}};
+}
+let S = null;
 let tab = "check";
-let periodStart = null; // Date
+let periodStart = null;
 let openDay = null;
+let jumpYear = null;
+let openBanks = {};
 let store = {kind:"none", save:null};
 
 /* ===================== DATES ===================== */
 function parseISO(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function addDays(d,n){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);return x;}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
 function dayDiff(a,b){return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);}
 function periodLen(s){return s.freq===52?7:14;}
 function currentPeriodStart(s,d){const a=parseISO(s.anchor);const L=periodLen(s);const k=Math.floor(dayDiff(a,d)/L);return addDays(a,k*L);}
+function firstPeriodInMonth(s,y,m){const first=new Date(y,m,1);let p=currentPeriodStart(s,first);if(p<first)p=addDays(p,periodLen(s));return p;}
+function periodEndsUpTo(s,d){return Math.floor((dayDiff(parseISO(s.anchor),d)+1)/periodLen(s));}
 const fmtD = d => d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
 const money = n => (n<0?"-":"")+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const hrs = n => (Math.round(n*100)/100).toLocaleString("en-US",{maximumFractionDigits:2});
 const r2 = n => Math.round((n+Number.EPSILON)*100)/100;
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 /* ===================== CALC ENGINE (mirrors the spreadsheet) ===================== */
-function rates(s){const o={};TYPES.forEach(t=>o[t.k]=t.k==="prem"?(+s.prem||0):(+s.rate||0)*(+s.mult[t.k]||0));return o;}
+function typeRate(s,t){return t.kind==="flat"?(+t.val||0):(+s.rate||0)*(+t.val||0);}
 function annualFedTax(x,s){
   const t=FED[s.status]; const half=s.step2?0.5:1;
   const std=t.std*half; let tax=0;
@@ -256,39 +398,77 @@ function annualFedTax(x,s){
   }
   return tax;
 }
-function stateRate(s){return s.stateOverride!==""&&s.stateOverride!=null?(+s.stateOverride)/100:(STATES[s.state]??0);}
+function stateSetup(s){
+  const work=s.state, home=s.homeState||s.state;
+  const own=s.stateOverride!==""&&s.stateOverride!=null?(+s.stateOverride)/100:null;
+  if(home===work) return {kind:"same",work,home,wState:work,rate:own??(STATES[work]??0),gap:0};
+  if((RECIP[work]||[]).includes(home)) return {kind:"recip",work,home,wState:home,rate:own??(STATES[home]??0),gap:0,form:RECIP_FORM[work]};
+  const rate=own??(STATES[work]??0);
+  return {kind:"none",work,home,wState:work,rate,gap:Math.max(0,(STATES[home]??0)-rate)};
+}
+function stateRate(s){return stateSetup(s).rate;}
+function isPremiumRate(t){return t.worked&&t.kind==="mult"&&+t.val>1;}
 function calcPeriod(s,start){
-  const L=periodLen(s), R=rates(s);
-  const days=[]; const tot={}; TYPES.forEach(t=>tot[t.k]=0);
+  const L=periodLen(s), T=s.types;
+  const days=[]; const tot={}; T.forEach(t=>tot[t.k]=0);
   for(let i=0;i<L;i++){const d=addDays(start,i);const h=S.hours[iso(d)]||{};
-    let amt=0,worked=0;TYPES.forEach(t=>{const v=+h[t.k]||0;tot[t.k]+=v;amt+=v*R[t.k];if(t.worked)worked+=v;});
+    let amt=0,worked=0;T.forEach(t=>{const v=+h[t.k]||0;tot[t.k]+=v;amt+=v*typeRate(s,t);if(t.worked)worked+=v;});
     days.push({d,h,amt,worked});}
-  const earn=TYPES.map(t=>({...t,hours:tot[t.k],rate:R[t.k],amount:r2(tot[t.k]*R[t.k])}));
+  const earn=T.map(t=>({...t,hours:tot[t.k],rate:typeRate(s,t),amount:r2(tot[t.k]*typeRate(s,t))}));
   const gross=r2(earn.reduce((a,e)=>a+e.amount,0));
-  const deds=s.deds.filter(d=>d.name).map(d=>({...d,amt:r2(d.type==="%"?(+d.amount/100)*gross:+d.amount||0)}));
+  const skipped=new Set(((S.skip||{})[iso(start)])||[]);
+  const deds=s.deds.filter(d=>d.name).map(d=>({...d,off:skipped.has(d.name),amt:skipped.has(d.name)?0:r2(d.type==="%"?(+d.amount/100)*gross:+d.amount||0)}));
+  const imputed=gross>0?(+s.imputed||0):0;
   const preInc=deds.filter(d=>d.preInc).reduce((a,d)=>a+d.amt,0);
   const preFica=deds.filter(d=>d.preFica).reduce((a,d)=>a+d.amt,0);
-  const taxable=Math.max(0,gross-preInc);
+  const taxable=Math.max(0,gross+imputed-preInc);
   const P=s.freq;
   const annual=taxable*P, adj=Math.max(0,annual+(+s.s4a||0)-(+s.s4b||0));
   const yearTax=annualFedTax(adj,s);
-  const credits=(+s.kids||0)*FED.childCredit+(+s.others||0)*FED.otherCredit;
+  const credits=(s.step3amt!==""&&s.step3amt!=null)?(+s.step3amt||0):(+s.kids||0)*FED.childCredit+(+s.others||0)*FED.otherCredit;
   const afterCred=Math.max(0,yearTax-credits);
   const fed=s.exempt?0:r2(afterCred/P)+(+s.s4c||0);
-  const ficaW=Math.max(0,gross-preFica);
+  const ficaW=Math.max(0,gross+imputed-preFica);
   const ss=r2(ficaW*FED.ssRate), med=r2(ficaW*FED.medRate);
-  const exemptYr=s.state==="Indiana"?(+s.inPersonal||0)*1000+(+s.inAddl||0)*1500+(+s.inAdopt||0)*3000:0;
+  const SS_=stateSetup(s);
+  const exemptYr=SS_.wState==="Indiana"?(+s.inPersonal||0)*1000+(+s.inAddl||0)*1500+(+s.inAdopt||0)*3000:0;
   const exPer=r2(exemptYr/P);
   const stW=Math.max(0,taxable-exPer);
   const sr=stateRate(s);
   const st=r2(stW*sr)+(+s.stateExtra||0);
-  const co=r2(stW*(+s.countyRate||0))+(+s.countyExtra||0);
-  const taxes=r2(fed+ss+med+st+co);
+  const homeW=(SS_.kind==="none"&&s.homeWithhold&&SS_.gap>0)?r2(taxable*SS_.gap):0;
+  const homeGap=(SS_.kind==="none"&&!s.homeWithhold&&SS_.gap>0)?r2(taxable*SS_.gap):0;
+  const coW=s.countyUsesExempt===false?taxable:stW;
+  const co=r2(coW*(+s.countyRate||0))+(+s.countyExtra||0);
+  const taxes=r2(fed+ss+med+st+co+homeW);
   const dedTot=r2(deds.reduce((a,d)=>a+d.amt,0));
   const net=r2(gross-taxes-dedTot);
-  const worked=TYPES.filter(t=>t.worked).reduce((a,t)=>a+tot[t.k],0);
-  const paid=TYPES.filter(t=>t.k!=="prem").reduce((a,t)=>a+tot[t.k],0);
-  return {days,earn,gross,deds,preInc,preFica,taxable,annual,adj,yearTax,credits,afterCred,fed,ficaW,ss,med,exPer,stW,sr,st,co,taxes,dedTot,net,worked,paid,tot};
+  const worked=T.filter(t=>t.worked).reduce((a,t)=>a+tot[t.k],0);
+  const paid=T.filter(t=>t.kind==="mult"&&+t.val>0).reduce((a,t)=>a+tot[t.k],0);
+  const premHrs=T.filter(isPremiumRate).reduce((a,t)=>a+tot[t.k],0);
+  return {SS_,homeW,homeGap,imputed,coW,days,earn,gross,deds,preInc,preFica,taxable,annual,adj,yearTax,credits,afterCred,fed,ficaW,ss,med,exPer,stW,sr,st,co,taxes,dedTot,net,worked,paid,premHrs,tot};
+}
+
+/* ===================== LEAVE BANKS ===================== */
+function bankBalance(s,b,upTo){
+  const asOf=parseISO(b.asOf||iso(new Date()));
+  if(upTo<asOf) return {bal:+b.start||0,accrued:0,used:0,earned:0};
+  const periods=Math.max(0,periodEndsUpTo(s,upTo)-periodEndsUpTo(s,asOf));
+  const accrued=periods*(+b.accrual||0);
+  let used=0,earned=0;
+  const useT=s.types.filter(t=>t.bank===b.id), earnT=s.types.filter(t=>t.earn===b.id);
+  Object.keys(S.hours).forEach(k=>{const d=parseISO(k);if(d<=asOf||d>upTo)return;const h=S.hours[k];
+    useT.forEach(t=>used+=+h[t.k]||0); earnT.forEach(t=>earned+=(+h[t.k]||0)*(+t.earnRate||1));});
+  let bal=(+b.start||0)+accrued+earned-used;
+  if(b.max!==""&&b.max!=null&&!isNaN(+b.max)&&+b.max>0) bal=Math.min(bal,+b.max);
+  return {bal,accrued,used,earned};
+}
+function yearActivity(s,b,year){
+  let used=0,earned=0;
+  const useT=s.types.filter(t=>t.bank===b.id), earnT=s.types.filter(t=>t.earn===b.id);
+  Object.keys(S.hours).forEach(k=>{if(!k.startsWith(String(year)))return;const h=S.hours[k];
+    useT.forEach(t=>used+=+h[t.k]||0); earnT.forEach(t=>earned+=(+h[t.k]||0)*(+t.earnRate||1));});
+  return {used,earned};
 }
 
 /* ===================== STORAGE ===================== */
@@ -298,7 +478,7 @@ function persist(){
   if(S.example) return;
   clearTimeout(saveTimer);
   setSaveLabel("Saving…");
-  saveTimer=setTimeout(flush,700);
+  saveTimer=setTimeout(()=>{saveTimer=null;flush();},700);
 }
 async function flush(){
   if(saving){pending=true;return;}
@@ -307,26 +487,37 @@ async function flush(){
   catch(e){ setSaveLabel("Couldn't save. Your changes are still on screen."); }
   saving=false; if(pending){pending=false;flush();}
 }
+function saveNow(){if(!saveTimer||!S||S.example)return;clearTimeout(saveTimer);saveTimer=null;if(localSetOk(JSON.parse(JSON.stringify(S))))setSaveLabel("Saved on this phone");}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveNow();});
+window.addEventListener("pagehide",saveNow);
 function localGet(){try{const v=localStorage.getItem("shiftpay.v1");return v?JSON.parse(v):null;}catch(e){return null;}}
-function localSet(v){try{localStorage.setItem("shiftpay.v1",JSON.stringify(v));}catch(e){}}
+function localSetOk(v){try{localStorage.setItem("shiftpay.v1",JSON.stringify(v));return true;}catch(e){return false;}}
 async function initStore(){
   store={kind:"local",save:async v=>{if(!localSetOk(v))throw new Error("storage");}};
   return localGet();
 }
-function localSetOk(v){try{localStorage.setItem("shiftpay.v1",JSON.stringify(v));return true;}catch(e){return false;}}
 
 /* ===================== RENDER ===================== */
 const main=document.getElementById("main");
-function h(html){return html;}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 function renderHeader(){
   const s=S.setup,L=periodLen(s),end=addDays(periodStart,L-1);
-  document.getElementById("pDates").textContent=fmtD(periodStart)+" – "+fmtD(end);
+  document.getElementById("pDates").textContent=fmtD(periodStart)+" – "+fmtD(end)+(periodStart.getFullYear()!==new Date().getFullYear()?", "+periodStart.getFullYear():"");
   document.getElementById("pPay").textContent="Payday "+addDays(end,+s.payLag||0).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
   const cur=currentPeriodStart(s,new Date());
   document.getElementById("todayBtn").hidden=iso(cur)===iso(periodStart);
   if(S.example) setSaveLabel("Example data");
+  const j=document.getElementById("jump");
+  if(!j.hidden) j.innerHTML=jumpPanel();
+}
+function jumpPanel(){
+  const y=jumpYear??periodStart.getFullYear();
+  const withHours=new Set(Object.keys(S.hours).filter(k=>k.startsWith(y+"-")).map(k=>+k.slice(5,7)-1));
+  const curM=periodStart.getFullYear()===y?periodStart.getMonth():-1;
+  return `<div class="jump-yr"><button data-jy="-1" aria-label="Previous year">‹</button><b>${y}</b><button data-jy="1" aria-label="Next year">›</button></div>
+  <div class="months">${MONTHS.map((m,i)=>`<button data-jm="${i}" class="${i===curM?"cur":""}" aria-label="${m} ${y}">${m}${withHours.has(i)?'<i aria-hidden="true"></i>':""}</button>`).join("")}</div>
+  <div class="jump-date"><label for="jumpDate">Or pick a day:</label><input type="date" id="jumpDate" value="${iso(periodStart)}"></div>`;
 }
 function banner(){
   if(!S.example) return "";
@@ -335,10 +526,8 @@ function banner(){
 function render(){
   renderHeader();
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===tab?"page":"false"));
-  if(tab==="check") main.innerHTML=banner()+viewCheck();
-  if(tab==="hours") main.innerHTML=banner()+viewHours();
-  if(tab==="history") main.innerHTML=banner()+viewHistory();
-  if(tab==="setup") main.innerHTML=banner()+viewSetup();
+  const v={check:viewCheck,hours:viewHours,leave:viewLeave,history:viewHistory,setup:viewSetup}[tab];
+  main.innerHTML=banner()+v();
 }
 
 function viewCheck(){
@@ -346,7 +535,8 @@ function viewCheck(){
   if(c.gross===0) return `<section class="card hero"><div class="k">Net pay</div><div class="net num">$0.00</div><div class="sub">No hours logged for this period yet.</div></section>
     <button class="btn primary" data-goto="hours">Enter hours</button>`;
   const pct=x=>Math.max(0,x/c.gross*100).toFixed(2)+"%";
-  const earnRows=c.earn.filter(e=>e.hours).map(e=>`<div class="line"><span>${e.label}<br><span class="d">${hrs(e.hours)} hrs × ${money(e.rate)}</span></span><span class="amt">${money(e.amount)}</span></div>`).join("");
+  const earnRows=c.earn.filter(e=>e.hours&&e.amount).map(e=>`<div class="line"><span>${esc(e.label)}<br><span class="d">${hrs(e.hours)} hrs × ${money(e.rate)}</span></span><span class="amt">${money(e.amount)}</span></div>`).join("");
+  const banked=c.earn.filter(e=>e.hours&&e.earn);
   const s=S.setup;
   return `
   <section class="card hero" aria-label="Net pay">
@@ -361,22 +551,27 @@ function viewCheck(){
     <div class="legend"><span><i style="background:var(--accent)"></i>Take-home ${Math.round(c.net/c.gross*100)}%</span><span><i style="background:#E2725F"></i>Taxes ${money(c.taxes)}</span><span><i style="background:#8FA6BE"></i>Deductions ${money(c.dedTot)}</span></div>
     <div class="stats">
       <div class="stat"><div class="v">${hrs(c.worked)}</div><div class="l">hours worked</div></div>
-      <div class="stat"><div class="v">${hrs(c.tot.ot+c.tot.dt+c.tot.hot)}</div><div class="l">OT + DT hours</div></div>
+      <div class="stat"><div class="v">${hrs(c.premHrs)}</div><div class="l">hrs at 1.5× or more</div></div>
       <div class="stat"><div class="v">${hrs(c.paid)}</div><div class="l">paid hours</div></div>
     </div>
   </section>
-  <section class="card"><h2>Earnings</h2><div class="lines">${earnRows}<div class="line total"><span>Gross pay</span><span class="amt">${money(c.gross)}</span></div></div></section>
+  <section class="card"><h2>Earnings</h2><div class="lines">${earnRows}<div class="line total"><span>Gross pay</span><span class="amt">${money(c.gross)}</span></div></div>
+  ${banked.length?`<p class="fine">${banked.map(e=>`${hrs(e.hours)} hrs ${esc(e.label.toLowerCase())} went to your leave bank instead of this check.`).join(" ")}</p>`:""}</section>
   <section class="card"><h2>Taxes</h2><div class="lines">
     <div class="line"><span>Federal income tax</span><span class="amt minus">${money(c.fed)}</span></div>
     <div class="line"><span>Social Security <span class="d">6.2%</span></span><span class="amt minus">${money(c.ss)}</span></div>
     <div class="line"><span>Medicare <span class="d">1.45%</span></span><span class="amt minus">${money(c.med)}</span></div>
-    <div class="line"><span>${esc(s.state)} state tax <span class="d">${(c.sr*100).toFixed(2)}%</span></span><span class="amt minus">${money(c.st)}</span></div>
+    <div class="line"><span>${esc(c.SS_.wState)} state tax <span class="d">${(c.sr*100).toFixed(2)}%</span></span><span class="amt minus">${money(c.st)}</span></div>
+    ${c.homeW?`<div class="line"><span>${esc(c.SS_.home)} (home state) extra <span class="d">${(c.SS_.gap*100).toFixed(2)}%</span></span><span class="amt minus">${money(c.homeW)}</span></div>`:""}
     ${(+s.countyRate||+s.countyExtra)?`<div class="line"><span>${esc(s.county||"County / local")} tax <span class="d">${(s.countyRate*100).toFixed(2)}%</span></span><span class="amt minus">${money(c.co)}</span></div>`:""}
-    <div class="line total"><span>Total taxes</span><span class="amt minus">${money(c.taxes)}</span></div></div></section>
-  ${c.deds.length?`<section class="card"><h2>Deductions</h2><div class="lines">${c.deds.map(d=>`<div class="line"><span>${esc(d.name)}${d.preInc?' <span class="d">pre-tax</span>':""}${d.type==="%"?` <span class="d">${+d.amount}%</span>`:""}</span><span class="amt minus">${money(d.amt)}</span></div>`).join("")}
-    <div class="line total"><span>Total deductions</span><span class="amt minus">${money(c.dedTot)}</span></div></div></section>`:""}
+    <div class="line total"><span>Total taxes</span><span class="amt minus">${money(c.taxes)}</span></div></div>
+    ${c.homeGap?`<p class="fine"><b>Heads up:</b> you live in ${esc(c.SS_.home)}, which taxes at a higher rate than ${esc(c.SS_.work)}. Up to about ${money(c.homeGap)} more from this check may be owed to ${esc(c.SS_.home)} at tax time, after its credit for ${esc(c.SS_.work)} tax. You can turn on home-state withholding in Setup.</p>`:""}</section>
+  ${c.deds.length?`<section class="card"><h2>Deductions</h2><div class="lines">${c.deds.map(d=>`<div class="line"${d.off?' style="opacity:.55"':""}><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" data-skip="${esc(d.name)}" ${d.off?"":"checked"} aria-label="Taken from this check">${esc(d.name)}${d.preInc?' <span class="d">pre-tax</span>':""}${d.type==="%"?` <span class="d">${+d.amount}%</span>`:""}</label><span class="amt minus">${d.off?"skipped":money(d.amt)}</span></div>`).join("")}
+    <div class="line total"><span>Total deductions</span><span class="amt minus">${money(c.dedTot)}</span></div></div>
+    <p class="fine">Uncheck a deduction that isn't taken from this check, like union dues taken once a month.</p></section>`:""}
   <section class="card"><details><summary>How your taxes were figured</summary><div class="lines">
     <div class="line"><span>Gross pay</span><span class="amt">${money(c.gross)}</span></div>
+    ${c.imputed?`<div class="line"><span>Plus imputed income (not paid to you)</span><span class="amt">${money(c.imputed)}</span></div>`:""}
     <div class="line"><span>Minus pre-tax deductions</span><span class="amt">${money(c.preInc)}</span></div>
     <div class="line"><span>Taxable wages this check</span><span class="amt">${money(c.taxable)}</span></div>
     <div class="line"><span>× ${s.freq} checks = yearly pace</span><span class="amt">${money(c.annual)}</span></div>
@@ -385,12 +580,13 @@ function viewCheck(){
     <div class="line"><span>Minus W-4 Step 3 credits</span><span class="amt">${money(c.credits)}</span></div>
     <div class="line"><span>÷ ${s.freq}, plus Step 4(c) extra</span><span class="amt">${money(c.fed)}</span></div>
     <div class="line"><span>State exemptions per check</span><span class="amt">${money(c.exPer)}</span></div>
-    <div class="line"><span>State & county taxable wages</span><span class="amt">${money(c.stW)}</span></div>
+    <div class="line"><span>State taxable wages</span><span class="amt">${money(c.stW)}</span></div>
+    <div class="line"><span>County taxable wages</span><span class="amt">${money(c.coW)}</span></div>
   </div><p class="fine">Federal uses the IRS ${TAX_YEAR} percentage method (Pub. 15-T) for the 2020-and-later W-4. Estimates can differ from your stub by a few dollars. This isn't tax advice.</p></details></section>`;
 }
 
 function chipsFor(hh){
-  const parts=TYPES.filter(t=>+hh[t.k]).map(t=>`<span class="chip${["ot","dt","hot","hw"].includes(t.k)?" ot":""}">${hrs(+hh[t.k])} ${t.short}</span>`);
+  const parts=S.setup.types.filter(t=>+hh[t.k]).map(t=>`<span class="chip${isPremiumRate(t)?" ot":""}">${hrs(+hh[t.k])} ${esc(t.short||t.label)}</span>`);
   return parts.length?parts.join(""):`<span class="chip off">Off</span>`;
 }
 function viewHours(){
@@ -405,19 +601,52 @@ function viewHours(){
       <button class="day-row" data-day="${k}" aria-expanded="${open}"><span class="day-date"><b>${d.d.getDate()}</b><span>${d.d.toLocaleDateString("en-US",{weekday:"short"})}</span></span>
       <span class="chips">${chipsFor(d.h)}</span><span class="day-amt">${d.amt?money(d.amt):""}</span></button>
       ${open?editor(k,d.h):""}</div>`;}).join("")}
-    </section>`;}).join("")+`<p class="fine">Tap a day to enter hours. Sick, comp, vacation and paid holiday hours are paid, but they don't count toward hours worked for overtime.</p>`;
+    </section>`;}).join("")+`<p class="fine">Tap a day to enter hours. Leave and paid holiday hours are paid, but they don't count toward hours worked for overtime. Rename, add or hide pay types in Setup.</p>`;
 }
 function editor(k,hh){
-  return `<div class="editor"><div class="quick">
-    <button data-q="reg:8">8 Reg</button><button data-q="reg:12">12 Reg</button><button data-q="+ot:4">+4 OT</button>
-    <button data-q="ot:8">8 OT</button><button data-q="ot:12">12 OT</button><button data-q="lv:8">8 Leave</button><button data-q="hp:8">8 Hol pd</button>
+  const T=S.setup.types, has=x=>T.some(t=>t.k===x&&t.show);
+  const q=[];
+  if(has("reg")){q.push(["reg:8","8 Reg"],["reg:12","12 Reg"]);}
+  if(has("ot")){q.push(["+ot:4","+4 OT"],["ot:8","8 OT"],["ot:12","12 OT"]);}
+  T.filter(t=>t.show&&t.bank).forEach(t=>q.push([t.k+":8","8 "+(t.short||t.label)]));
+  if(has("hp"))q.push(["hp:8","8 Hol pd"]);
+  const fields=T.filter(t=>t.show||+hh[t.k]);
+  return `<div class="editor"><div class="quick">${q.map(([d,l])=>`<button data-q="${esc(d)}">${esc(l)}</button>`).join("")}
     <button class="clear" data-q="clear">Clear day</button></div>
-    <div class="fields">${TYPES.map(t=>`<div class="f"><label for="h-${t.k}">${t.label}</label><input id="h-${t.k}" data-h="${t.k}" inputmode="decimal" value="${+hh[t.k]?+hh[t.k]:""}" placeholder="0"></div>`).join("")}</div></div>`;
+    <div class="fields">${fields.map(t=>`<div class="f"><label for="h-${esc(t.k)}" title="${esc(t.label)}">${esc(t.label)}</label><input id="h-${esc(t.k)}" data-h="${esc(t.k)}" inputmode="decimal" value="${+hh[t.k]?+hh[t.k]:""}" placeholder="0"></div>`).join("")}</div></div>`;
+}
+
+function viewLeave(){
+  const s=S.setup, today=new Date(), L=periodLen(s), pEnd=addDays(periodStart,L-1), y=today.getFullYear();
+  const nextEnd=addDays(parseISO(s.anchor),(periodEndsUpTo(s,today)+1)*L-1);
+  return `<section class="card"><h2>Leave balances</h2><p class="fine" style="margin:0">Enter each balance from your latest pay stub and the date it's from. ShiftWorkPay adds what you earn each pay period and subtracts leave you log on the Hours tab.</p></section>
+  ${s.banks.map((b,i)=>{const now=bankBalance(s,b,today), then=bankBalance(s,b,pEnd), ya=yearActivity(s,b,y);
+    const showThen=iso(pEnd)!==iso(currentPeriodStart(s,today)) && dayDiff(today,pEnd)!==0;
+    return `<section class="card bank">
+      <div class="bank-top"><h3>${esc(b.name)}</h3><div class="bank-bal${now.bal<0?" neg":""}">${hrs(now.bal)} <small>hrs</small></div></div>
+      <div class="bank-stats">
+        <div><div class="v">${hrs(ya.used)}</div><div class="l">used in ${y}</div></div>
+        <div><div class="v">${+b.accrual?"+"+hrs(+b.accrual):"—"}</div><div class="l">${+b.accrual?"next on "+fmtD(nextEnd):"no accrual set"}</div></div>
+        <div><div class="v">${money(now.bal*(+s.rate||0))}</div><div class="l">worth at your rate</div></div>
+      </div>
+      ${showThen?`<p class="fine" style="margin:0">By the end of the period you're viewing (${fmtD(pEnd)}): <b>${hrs(then.bal)} hrs</b></p>`:""}
+      ${ya.earned?`<p class="fine" style="margin:0">Earned from banked OT in ${y}: ${hrs(ya.earned)} hrs</p>`:""}
+      <details data-bank="${i}" ${openBanks[i]?"open":""}><summary>Update ${esc(b.name.toLowerCase())}</summary><div class="form" style="margin-top:6px">
+        <div class="row"><label for="bn${i}">Name</label><input id="bn${i}" data-b="${i}:name" value="${esc(b.name)}"></div>
+        <div class="row"><label for="bs${i}">Balance on your stub (hours)</label><input id="bs${i}" data-b="${i}:start" inputmode="decimal" value="${b.start}"></div>
+        <div class="row"><label for="ba${i}">As of date<small>The stub's period end date</small></label><input id="ba${i}" type="date" data-b="${i}:asOf" value="${esc(b.asOf)}"></div>
+        <div class="row"><label for="bc${i}">Hours earned each pay period</label><input id="bc${i}" data-b="${i}:accrual" inputmode="decimal" value="${b.accrual}"></div>
+        <div class="row"><label for="bm${i}">Maximum you can carry<small>Optional</small></label><input id="bm${i}" data-b="${i}:max" inputmode="decimal" value="${esc(b.max)}" placeholder="none"></div>
+        <button class="btn small danger" data-delbank="${i}">Remove ${esc(b.name)}</button>
+      </div></details>
+    </section>`;}).join("")}
+  <button class="btn small" data-act="addBank">+ Add a leave type</button>
+  <p class="fine">Pay types that use each bank are set in Setup → Pay types. "OT banked as comp" adds 1.5 hours of comp time for every hour, instead of paying it.</p>`;
 }
 
 function periodsWithHours(){
   const s=S.setup,L=periodLen(s);const starts=new Set();
-  Object.keys(S.hours).forEach(k=>{const hh=S.hours[k];if(!TYPES.some(t=>+hh[t.k]))return;starts.add(iso(currentPeriodStart(s,parseISO(k))));});
+  Object.keys(S.hours).forEach(k=>{const hh=S.hours[k];if(!s.types.some(t=>+hh[t.k]))return;starts.add(iso(currentPeriodStart(s,parseISO(k))));});
   return [...starts].sort().reverse().map(st=>{const d=parseISO(st);return {d,c:calcPeriod(s,d),end:addDays(d,L-1)};});
 }
 function viewHistory(){
@@ -428,7 +657,7 @@ function viewHistory(){
     <div><div class="v">${money(sum(c=>c.gross))}</div><div class="l">Gross</div></div>
     <div><div class="v" style="color:var(--good)">${money(sum(c=>c.net))}</div><div class="l">Net</div></div>
     <div><div class="v">${money(sum(c=>c.taxes))}</div><div class="l">Taxes</div></div>
-    <div><div class="v">${hrs(sum(c=>c.tot.ot+c.tot.dt+c.tot.hot))}</div><div class="l">OT + DT hours</div></div></div></section>
+    <div><div class="v">${hrs(sum(c=>c.premHrs))}</div><div class="l">Hours at 1.5× or more</div></div></div></section>
   <section class="card"><h2>Pay periods</h2><div class="hist">${list.length?list.map(p=>`<button class="hrow" data-jump="${iso(p.d)}">
     <span class="p">${fmtD(p.d)} – ${fmtD(p.end)}</span><span class="g">${money(p.c.gross)}</span><span class="n">${money(p.c.net)}</span>
     <span class="s">Paid ${fmtD(addDays(p.end,+S.setup.payLag||0))} · ${hrs(p.c.worked)} hrs worked · fed ${money(p.c.fed)}</span></button>`).join(""):`<p class="fine">Periods show up here once you log hours.</p>`}</div></section>
@@ -443,6 +672,46 @@ function viewHistory(){
 }
 
 function opt(v,cur,label){return `<option value="${esc(v)}"${String(v)===String(cur)?" selected":""}>${esc(label??v)}</option>`;}
+function typeRows(s){
+  const bankOpts=(cur)=>opt("",cur||"","None")+s.banks.map(b=>opt(b.id,cur||"",b.name)).join("");
+  return `<div class="ph"><span>Name</span><span>Short</span><span>Type</span><span>Value</span></div>`+
+  s.types.map((t,i)=>`<div class="ptype${t.show?"":" hidden-type"}">
+    <div class="ptype-main">
+      <input aria-label="Pay type name" data-t="${i}:label" value="${esc(t.label)}">
+      <input aria-label="Short label" data-t="${i}:short" value="${esc(t.short)}" maxlength="8">
+      <select aria-label="Multiplier or flat dollars" data-t="${i}:kind">${opt("mult",t.kind,"×")}${opt("flat",t.kind,"$")}</select>
+      <input aria-label="${t.kind==="flat"?"Dollars per hour":"Multiplier"}" data-t="${i}:val" inputmode="decimal" value="${t.val}">
+    </div>
+    <div class="ptype-flags">
+      <label><input type="checkbox" data-t="${i}:show" ${t.show?"checked":""}>Show</label>
+      <label><input type="checkbox" data-t="${i}:worked" ${t.worked?"checked":""}>Counts toward OT</label>
+      ${t.earn?`<span>Adds ${hrs(+t.earnRate||1)}× to ${esc((s.banks.find(b=>b.id===t.earn)||{}).name||"bank")}</span>`:`<label>Uses leave bank <select data-t="${i}:bank">${bankOpts(t.bank)}</select></label>`}
+      <span class="rate" data-rate="${i}">${money(typeRate(s,t))}/hr</span>
+      <button class="x" data-deltype="${i}" aria-label="Delete ${esc(t.label)}">×</button>
+    </div>${pendingDel===i?delConfirm(t,i):""}</div>`).join("")+
+  `<button class="btn small${pickerOpen?" primary":""}" data-act="addType" style="margin-top:8px" aria-expanded="${pickerOpen}">${pickerOpen?"Close list":"+ Add pay type"}</button>
+  ${pickerOpen?picker(s):""}
+  <p class="fine">× multiplies your base rate (1.5 = time and a half). $ is a flat amount per hour, like a shift differential. Tap × on the right of a type to delete it, or uncheck Show to just hide it.</p>`;
+}
+function usage(k){let n=0,h=0;Object.values(S.hours).forEach(d=>{if(+d[k]){n++;h+=+d[k];}});return {n,h};}
+function delConfirm(t,i){const u=usage(t.k);
+  return `<div class="banner" style="margin-top:8px"><p>Delete <b>${esc(t.label)}</b>? You've logged ${hrs(u.h)} hours of it on ${u.n} day${u.n===1?"":"s"}. Those hours will stop counting in your pay. If you add ${esc(t.label)} back later from the list, they'll return.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small danger" data-delyes="${i}">Delete</button><button class="btn small" data-delhide="${i}">Just hide it</button><button class="btn small" data-delno="1">Cancel</button></div></div>`;}
+function picker(s){const have=new Set(s.types.map(t=>t.k));
+  const groups=LIBRARY.map(g=>{const items=g.items.filter(x=>!have.has(x.k));if(!items.length)return "";
+    return `<div style="margin-top:10px"><div class="fine" style="font-weight:600;text-transform:uppercase;letter-spacing:.05em">${esc(g.g)}</div>
+    <div class="quick" style="margin-top:6px">${items.map(x=>`<button data-addlib="${x.k}">+ ${esc(x.label)} <span class="fine">${x.kind==="flat"?"$"+x.val+"/hr":x.val+"×"}</span></button>`).join("")}</div></div>`;}).join("");
+  return `<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px">
+    ${groups||'<p class="fine" style="margin:0">You already have every pay type on the list.</p>'}
+    <div style="margin-top:12px"><button class="btn small" data-act="addCustom">+ Create my own pay type</button></div>
+    <p class="fine" style="margin:8px 0 0">After adding one, change its rate or name to match your stub.</p></div>`;}
+function stateNote(s){
+  const x=stateSetup(s);
+  if(x.kind==="same") return "";
+  if(x.kind==="recip") return `<p class="banner" style="margin:0"><span>${esc(x.work)} and ${esc(x.home)} have a reciprocity agreement. If you give your employer form <b>${esc(x.form)}</b>, only ${esc(x.home)} tax is withheld. ShiftWorkPay assumes you've filed it. Set the county/local rate below to match your stub, usually 0 in this case.</span></p>`;
+  return `<p class="banner" style="margin:0"><span>${esc(x.work)} and ${esc(x.home)} have no reciprocity agreement, so your employer withholds ${esc(x.work)} tax. ${esc(x.home)} usually gives you a credit for it on your return.${x.gap>0?` Because ${esc(x.home)}'s rate is higher, you may owe up to the difference at tax time.`:` ${esc(x.home)}'s rate isn't higher, so you likely won't owe it more.`}</span></p>
+  ${x.gap>0?`<div class="row"><label for="homeWithhold">Also withhold the ${esc(x.home)} difference?<small>Some employers do this if you ask. It avoids a bill at tax time.</small></label><select id="homeWithhold" data-s="homeWithhold" data-bool>${opt("false",String(!!s.homeWithhold),"No")}${opt("true",String(!!s.homeWithhold),"Yes")}</select></div>`:""}`;
+}
 function viewSetup(){
   const s=S.setup;
   const stNote=NO_TAX.has(s.state)?"No state income tax on wages.":FLAT.has(s.state)?"Flat-rate state.":"This state has brackets. The rate shown is a rough average, so type your own if you know it.";
@@ -452,31 +721,36 @@ function viewSetup(){
     <div class="row"><label for="freq">Paid every</label><select id="freq" data-s="freq">${opt(26,s.freq,"2 weeks")}${opt(52,s.freq,"Week")}</select></div>
     <div class="row"><label for="anchor">A period start date<small>Any past period's first day</small></label><input id="anchor" type="date" data-s="anchor" value="${s.anchor}"></div>
     <div class="row"><label for="payLag">Payday is how many days after a period ends?</label><input id="payLag" data-s="payLag" inputmode="numeric" value="${s.payLag}"></div>
-    <div class="mults"><span class="h">Pay type</span><span class="h">Multiplier</span><span class="h" style="text-align:right">Per hour</span>
-    ${TYPES.filter(t=>t.k!=="prem").map(t=>`<label for="m-${t.k}">${t.label}</label><input id="m-${t.k}" data-m="${t.k}" inputmode="decimal" value="${s.mult[t.k]}"><span class="rate">${money(s.rate*s.mult[t.k])}</span>`).join("")}
-    <label for="prem">Premium ($ per hour, flat)</label><input id="prem" data-s="prem" inputmode="decimal" value="${s.prem}"><span class="rate">${money(+s.prem)}</span></div>
   </section>
+  <section class="card"><h2>Pay types</h2>${typeRows(s)}</section>
   <section class="card form"><h2>Federal W-4</h2>
     <div class="row"><label for="status">Step 1(c) filing status</label><select id="status" data-s="status">${opt("single",s.status,"Single / Married filing separately")}${opt("mfj",s.status,"Married filing jointly")}${opt("hoh",s.status,"Head of household")}</select></div>
     <div class="row"><label for="step2">Step 2(c) box checked?<small>Two jobs, or a spouse who works</small></label><select id="step2" data-s="step2" data-bool>${opt("false",String(s.step2),"No")}${opt("true",String(s.step2),"Yes")}</select></div>
     <div class="row"><label for="kids">Step 3 children under 17<small>$${FED.childCredit.toLocaleString()} each</small></label><input id="kids" data-s="kids" inputmode="numeric" value="${s.kids}"></div>
     <div class="row"><label for="others">Step 3 other dependents<small>$500 each</small></label><input id="others" data-s="others" inputmode="numeric" value="${s.others}"></div>
+    <div class="row"><label for="step3amt">Or Step 3 total, in dollars<small>Use this if your pay stub shows a "dependent amount." It replaces the two lines above.</small></label><input id="step3amt" data-s="step3amt" inputmode="decimal" value="${s.step3amt??""}" placeholder="optional"></div>
     <div class="row"><label for="s4a">Step 4(a) other income per year</label><input id="s4a" data-s="s4a" inputmode="decimal" value="${s.s4a}"></div>
     <div class="row"><label for="s4b">Step 4(b) deductions per year<small>The ${TAX_YEAR} W-4 lets you count the new overtime deduction here.</small></label><input id="s4b" data-s="s4b" inputmode="decimal" value="${s.s4b}"></div>
     <div class="row"><label for="s4c">Step 4(c) extra per paycheck</label><input id="s4c" data-s="s4c" inputmode="decimal" value="${s.s4c}"></div>
     <div class="row"><label for="exempt">Claiming exempt?</label><select id="exempt" data-s="exempt" data-bool>${opt("false",String(s.exempt),"No")}${opt("true",String(s.exempt),"Yes")}</select></div>
   </section>
   <section class="card form"><h2>State & local</h2>
-    <div class="row"><label for="state">State<small>${stNote}</small></label><select id="state" data-s="state">${Object.keys(STATES).map(k=>opt(k,s.state)).join("")}</select></div>
-    <div class="row"><label for="stateOverride">Your own state rate, %<small>Leave blank to use ${((STATES[s.state]??0)*100).toFixed(2)}%</small></label><input id="stateOverride" data-s="stateOverride" inputmode="decimal" value="${s.stateOverride??""}" placeholder="optional"></div>
+    <div class="row"><label for="state">State you work in<small>${stNote}</small></label><select id="state" data-s="state">${Object.keys(STATES).map(k=>opt(k,s.state)).join("")}</select></div>
+    <div class="row"><label for="homeState">State you live in</label><select id="homeState" data-s="homeState">${opt("",s.homeState||"","Same as work state")}${Object.keys(STATES).map(k=>opt(k,s.homeState||"")).join("")}</select></div>
+    ${stateNote(s)}
+    <div class="row"><label for="stateOverride">Your own rate for ${esc(stateSetup(s).wState)}, %<small>Leave blank to use ${((STATES[stateSetup(s).wState]??0)*100).toFixed(2)}%</small></label><input id="stateOverride" data-s="stateOverride" inputmode="decimal" value="${s.stateOverride??""}" placeholder="optional"></div>
     <div class="row"><label for="county">County / city name</label><input id="county" data-s="county" value="${esc(s.county)}"></div>
-    <div class="row"><label for="countyRate">County / local rate, %<small>Indiana: your county on Jan 1. Lake County is 1.5%.</small></label><input id="countyRate" data-pct="countyRate" inputmode="decimal" value="${r2(s.countyRate*100*1000)/1000}"></div>
-    ${s.state==="Indiana"?`
+    <div class="row"><label for="countyRate">County / local rate, %<small>Indiana: the county you lived in on Jan 1. If you live out of state, the county where you work. Lake County is 1.5%.</small></label><input id="countyRate" data-pct="countyRate" inputmode="decimal" value="${r2(s.countyRate*100*1000)/1000}"></div>
+    ${stateSetup(s).wState==="Indiana"?`
     <div class="row"><label for="inPersonal">WH-4 lines 1–4 exemptions<small>You, spouse, dependents, 65+/blind · $1,000 each</small></label><input id="inPersonal" data-s="inPersonal" inputmode="numeric" value="${s.inPersonal}"></div>
     <div class="row"><label for="inAddl">WH-4 lines 5–6 extra dependents<small>$1,500 each</small></label><input id="inAddl" data-s="inAddl" inputmode="numeric" value="${s.inAddl}"></div>
     <div class="row"><label for="inAdopt">WH-4 line 7 adopted children<small>$3,000 each</small></label><input id="inAdopt" data-s="inAdopt" inputmode="numeric" value="${s.inAdopt}"></div>`:""}
+    <div class="row"><label for="countyUsesExempt">Subtract exemptions before county tax?<small>Check your stub. Some Indiana payrolls take county tax on the full amount.</small></label><select id="countyUsesExempt" data-s="countyUsesExempt" data-bool>${opt("true",String(s.countyUsesExempt!==false),"Yes")}${opt("false",String(s.countyUsesExempt!==false),"No")}</select></div>
     <div class="row"><label for="stateExtra">Extra state withholding per check</label><input id="stateExtra" data-s="stateExtra" inputmode="decimal" value="${s.stateExtra}"></div>
     <div class="row"><label for="countyExtra">Extra county withholding per check</label><input id="countyExtra" data-s="countyExtra" inputmode="decimal" value="${s.countyExtra}"></div>
+  </section>
+  <section class="card form"><h2>Imputed income</h2>
+    <div class="row"><label for="imputed">Per check, in dollars<small>Taxed but not paid to you, like employer group term life. Look for "Imputed earnings" on your stub.</small></label><input id="imputed" data-s="imputed" inputmode="decimal" value="${s.imputed||0}"></div>
   </section>
   <section class="card"><h2>Deductions per paycheck</h2>
     ${s.deds.map((d,i)=>`<div class="ded"><input aria-label="Deduction name" data-d="${i}:name" value="${esc(d.name)}" placeholder="Name"><input aria-label="Amount" data-d="${i}:amount" inputmode="decimal" value="${d.amount}"><select aria-label="Dollars or percent" data-d="${i}:type">${opt("$",d.type)}${opt("%",d.type)}</select><button class="x" data-del="${i}" aria-label="Remove ${esc(d.name)}">×</button></div>
@@ -491,11 +765,19 @@ function viewSetup(){
 document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;openDay=null;render();window.scrollTo(0,0);});
 document.getElementById("prev").onclick=()=>{periodStart=addDays(periodStart,-periodLen(S.setup));openDay=null;render();};
 document.getElementById("next").onclick=()=>{periodStart=addDays(periodStart,periodLen(S.setup));openDay=null;render();};
-document.getElementById("todayBtn").onclick=()=>{periodStart=currentPeriodStart(S.setup,new Date());render();};
+document.getElementById("todayBtn").onclick=()=>{periodStart=currentPeriodStart(S.setup,new Date());jumpYear=null;render();};
+const jumpEl=document.getElementById("jump"), datesBtn=document.getElementById("datesBtn");
+function toggleJump(open){jumpEl.hidden=!open;datesBtn.setAttribute("aria-expanded",String(open));jumpYear=periodStart.getFullYear();if(open)jumpEl.innerHTML=jumpPanel();}
+datesBtn.onclick=()=>toggleJump(jumpEl.hidden);
+jumpEl.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.jy){jumpYear+=+b.dataset.jy;jumpEl.innerHTML=jumpPanel();return;}
+  if(b.dataset.jm!=null){periodStart=firstPeriodInMonth(S.setup,jumpYear,+b.dataset.jm);openDay=null;toggleJump(false);render();}});
+jumpEl.addEventListener("change",e=>{if(e.target.id==="jumpDate"&&e.target.value){periodStart=currentPeriodStart(S.setup,parseISO(e.target.value));openDay=null;toggleJump(false);render();}});
 
-function clearExample(){S={v:1,setup:{...S.setup,example:false},hours:{}};delete S.example;delete S.setup.example;persist();}
+function clearExample(){S={v:2,setup:{...S.setup},hours:{}};delete S.example;delete S.setup.example;
+  S.setup.banks=defaultBanks(iso(new Date()));persist();}
 main.addEventListener("click",async e=>{
-  const t=e.target.closest("[data-act],[data-day],[data-q],[data-goto],[data-jump],[data-del]");if(!t)return;
+  const t=e.target.closest("[data-act],[data-day],[data-q],[data-goto],[data-jump],[data-del],[data-deltype],[data-delbank],[data-delyes],[data-delhide],[data-delno],[data-addlib]");if(!t)return;
   if(t.dataset.goto){tab=t.dataset.goto;render();return;}
   if(t.dataset.jump){periodStart=parseISO(t.dataset.jump);tab="check";render();window.scrollTo(0,0);return;}
   if(t.dataset.day){openDay=openDay===t.dataset.day?null:t.dataset.day;render();
@@ -504,17 +786,36 @@ main.addEventListener("click",async e=>{
     if(q==="clear")hh={};else{const add=q.startsWith("+");const [k,v]=q.replace("+","").split(":");hh[k]=add?(+hh[k]||0)+ +v:+v;}
     setHours(openDay,hh);render();return;}
   if(t.dataset.del!=null){S.setup.deds.splice(+t.dataset.del,1);persist();render();return;}
+  if(t.dataset.deltype!=null){const i=+t.dataset.deltype;leaveExampleForEdit();const ty=S.setup.types[i];
+    if(usage(ty.k).n){pendingDel=pendingDel===i?null:i;render();return;}
+    S.setup.types.splice(i,1);pendingDel=null;persist();render();return;}
+  if(t.dataset.delyes!=null){S.setup.types.splice(+t.dataset.delyes,1);pendingDel=null;persist();render();return;}
+  if(t.dataset.delhide!=null){S.setup.types[+t.dataset.delhide].show=false;pendingDel=null;persist();render();return;}
+  if(t.dataset.delno){pendingDel=null;render();return;}
+  if(t.dataset.addlib){leaveExampleForEdit();const item=LIBRARY.flatMap(g=>g.items).find(x=>x.k===t.dataset.addlib);
+    const nt={...item,show:true};
+    if(nt.bank&&!S.setup.banks.some(b=>b.id===nt.bank))delete nt.bank;
+    if(nt.earn&&!S.setup.banks.some(b=>b.id===nt.earn)){S.setup.banks.push({id:nt.earn,name:"Comp time",start:0,asOf:iso(new Date()),accrual:0,max:""});}
+    S.setup.types.push(nt);persist();render();return;}
+  if(t.dataset.delbank!=null){const b=S.setup.banks[+t.dataset.delbank];S.setup.banks.splice(+t.dataset.delbank,1);
+    S.setup.types.forEach(x=>{if(x.bank===b.id)delete x.bank;});persist();render();return;}
   const a=t.dataset.act;
   if(a==="start"){clearExample();periodStart=currentPeriodStart(S.setup,new Date());tab="setup";render();}
   if(a==="addDed"){S.setup.deds.push({name:"",amount:0,type:"$",preInc:false,preFica:false});persist();render();}
+  if(a==="addType"){pickerOpen=!pickerOpen;pendingDel=null;render();return;}
+  if(a==="addCustom"){leaveExampleForEdit();pickerOpen=false;S.setup.types.push({k:"c"+Date.now().toString(36),label:"New pay type",short:"New",kind:"mult",val:1,worked:true,show:true});persist();render();
+    const ins=main.querySelectorAll('[data-t$=":label"]');const last=ins[ins.length-1];last?.focus();last?.select();}
+  if(a==="addBank"){if(S.example)clearExampleKeepView();const id="b"+Date.now().toString(36);
+    S.setup.banks.push({id,name:"New leave",start:0,asOf:iso(new Date()),accrual:0,max:""});
+    S.setup.types.push({k:"u"+id,label:"New leave used",short:"Leave",kind:"mult",val:1,worked:false,show:true,bank:id});persist();render();}
   if(a==="saveFile"){const code="SHIFTPAY1:"+btoa(unescape(encodeURIComponent(JSON.stringify(S))));
     const blob=new Blob([code],{type:"text/plain"});const url=URL.createObjectURL(blob);const link=document.createElement("a");
-    link.href=url;link.download="shiftpay-backup-"+iso(new Date())+".txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);msg("Backup file saved. Look in your Downloads or Files app.");}
+    link.href=url;link.download="shiftworkpay-backup-"+iso(new Date())+".txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);msg("Backup file saved. Look in your Downloads or Files app.");}
   if(a==="export"){document.getElementById("code").value="SHIFTPAY1:"+btoa(unescape(encodeURIComponent(JSON.stringify(S))));msg("This code holds all your hours and settings. Keep it somewhere safe.");}
   if(a==="copy"){const ta=document.getElementById("code");try{await navigator.clipboard.writeText(ta.value);msg("Copied.");}catch(err){ta.select();msg("Selected. Use your phone's Copy.");}}
   if(a==="import"){const raw=document.getElementById("code").value.trim();
     try{if(!raw.startsWith("SHIFTPAY1:"))throw 0;const v=JSON.parse(decodeURIComponent(escape(atob(raw.slice(10)))));if(!v.setup||!v.hours)throw 0;
-      S=v;delete S.example;delete S.setup.example;S.setup={...defaultSetup(),...S.setup};periodStart=currentPeriodStart(S.setup,new Date());persist();tab="check";render();}
+      S=normalize(v);periodStart=currentPeriodStart(S.setup,new Date());persist();tab="check";render();}
     catch(err){msg("That code didn't load. Copy the whole code, starting with SHIFTPAY1:");}}
 });
 main.addEventListener("change",e=>{if(e.target.id!=="openFile"||!e.target.files[0])return;const fr=new FileReader();
@@ -527,36 +828,51 @@ function setHours(k,hh){
   persist();
 }
 function clearExampleKeepView(){const ps=periodStart;clearExample();periodStart=ps;}
+function leaveExampleForEdit(){if(S.example){const ps=periodStart;delete S.example;delete S.setup.example;S.hours={};S.setup.banks=defaultBanks(iso(new Date()));periodStart=ps;}}
 
 main.addEventListener("input",e=>{
   const el=e.target;
   if(el.dataset.h){const hh={...(S.hours[openDay]||{})};const v=parseFloat(el.value);hh[el.dataset.h]=isNaN(v)?0:v;setHours(openDay,hh);
-    // update chips/amount without re-rendering the inputs
     const c=calcPeriod(S.setup,periodStart);const d=c.days.find(x=>iso(x.d)===openDay);
     const row=document.querySelector(`[data-day="${openDay}"]`);if(row&&d){row.querySelector(".chips").innerHTML=chipsFor(d.h);row.querySelector(".day-amt").textContent=d.amt?money(d.amt):"";}
     return;}
-  if(S.example&&(el.dataset.s||el.dataset.m||el.dataset.d||el.dataset.pct)){delete S.example;delete S.setup.example;S.hours={};}
+  if(el.dataset.skip!=null){if(S.example)leaveExampleForEdit();S.skip=S.skip||{};const k=iso(periodStart);const set=new Set(S.skip[k]||[]);
+    if(el.checked)set.delete(el.dataset.skip);else set.add(el.dataset.skip);
+    if(set.size)S.skip[k]=[...set];else delete S.skip[k];persist();render();return;}
+  if(el.dataset.s||el.dataset.t||el.dataset.d||el.dataset.pct||el.dataset.b) leaveExampleForEdit();
   const s=S.setup;
   if(el.dataset.s){const k=el.dataset.s;let v=el.value;
     if(el.hasAttribute("data-bool"))v=v==="true";
-    else if(!["status","state","county","anchor","stateOverride"].includes(k))v=v===""?0:parseFloat(v)||0;
+    else if(!["status","state","homeState","county","anchor","stateOverride","step3amt"].includes(k))v=v===""?0:parseFloat(v)||0;
     if(k==="freq")v=+el.value;
     s[k]=v;persist();
-    if(k==="rate"||k==="prem")document.querySelectorAll(".mults .rate").forEach((sp,i)=>{const t=TYPES.filter(t=>t.k!=="prem")[i];sp.textContent=t?money(s.rate*s.mult[t.k]):money(+s.prem);});
-    if(["status","state","freq","step2","exempt","anchor"].includes(k)){if(k==="freq"||k==="anchor")periodStart=currentPeriodStart(s,new Date());render();}
+    if(["status","state","homeState","homeWithhold","freq","step2","exempt","anchor"].includes(k)){if(k==="freq"||k==="anchor")periodStart=currentPeriodStart(s,new Date());render();}
     return;}
-  if(el.dataset.m){s.mult[el.dataset.m]=parseFloat(el.value)||0;persist();el.nextElementSibling.textContent=money(s.rate*s.mult[el.dataset.m]);return;}
+  if(el.dataset.t){const [i,f]=el.dataset.t.split(":");const t=s.types[+i];
+    if(el.type==="checkbox")t[f]=el.checked;
+    else if(f==="val")t[f]=parseFloat(el.value)||0;
+    else if(f==="bank"){if(el.value)t.bank=el.value;else delete t.bank;}
+    else t[f]=el.value;
+    persist();
+    if(f==="kind"||f==="show")render();
+    else{const r=main.querySelector(`[data-rate="${i}"]`);if(r)r.textContent=money(typeRate(s,t))+"/hr";}
+    return;}
+  if(el.dataset.b){const [i,f]=el.dataset.b.split(":");const b=s.banks[+i];
+    if(f==="name"||f==="asOf")b[f]=el.value;else if(f==="max")b[f]=el.value===""?"":parseFloat(el.value)||0;else b[f]=parseFloat(el.value)||0;
+    persist();return;}
   if(el.dataset.pct){s[el.dataset.pct]=(parseFloat(el.value)||0)/100;persist();return;}
   if(el.dataset.d){const [i,f]=el.dataset.d.split(":");const d=s.deds[+i];
     if(el.type==="checkbox")d[f]=el.checked;else if(f==="amount")d[f]=parseFloat(el.value)||0;else d[f]=el.value;persist();return;}
 });
+// Re-draw leave cards when a field is finished (not on every keystroke, so typing isn't interrupted)
+main.addEventListener("change",e=>{if(e.target.dataset&&e.target.dataset.b)render();});
+main.addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches("details[data-bank]"))openBanks[e.target.dataset.bank]=e.target.open;},true);
 
 /* ===================== BOOT ===================== */
 (async function(){
   S=EXAMPLE();periodStart=currentPeriodStart(S.setup,new Date());render();
   const loaded=await initStore();
-  if(loaded&&loaded.setup){S=loaded;S.setup={...defaultSetup(),...S.setup,mult:{...defaultSetup().mult,...(S.setup.mult||{})}};periodStart=currentPeriodStart(S.setup,new Date());
-    setSaveLabel("Saved on this phone");}
+  if(loaded&&loaded.setup){S=normalize(loaded);periodStart=currentPeriodStart(S.setup,new Date());setSaveLabel("Saved on this phone");}
   else setSaveLabel("Example data");
   if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
   render();

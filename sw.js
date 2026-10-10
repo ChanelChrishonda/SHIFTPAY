@@ -1,6 +1,6 @@
-// ShiftPay offline support. Change VERSION whenever you upload a new index.html
+// ShiftWorkPay offline support. Change VERSION whenever you upload a new index.html
 // (for example each January) so phones pick up the update.
-const VERSION = "shiftpay-2026-v1";
+const VERSION = "shiftworkpay-2026-v6";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
