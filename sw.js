@@ -1,10 +1,10 @@
 // Offline support for ShiftWorkPay.
 // Bump VERSION every time you upload changes (or phones keep the old copy).
-const VERSION = "shiftworkpay-2026-v7";
+const VERSION = "shiftworkpay-2026-v8";
 const FILES = [
   "./", "index.html", "styles.css",
-  "js/taxes.js", "js/state.js", "js/storage.js", "js/views.js", "js/app.js",
-  "data/tax-2026.json",
+  "taxes.js", "state.js", "storage.js", "views.js", "app.js",
+  "tax-2026.json",
   "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"
 ];
 

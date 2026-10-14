@@ -7,7 +7,7 @@
 // to change for a new year unless the IRS changes the method itself.
 
 let TAX_YEAR, FED, STATES = {}, FLAT = new Set(), NO_TAX = new Set(), RECIP = {}, RECIP_FORM = {};
-const TAX_FILE = "data/tax-2026.json";
+const TAX_FILE = "tax-2026.json";
 
 async function loadTaxData() {
   const res = await fetch(TAX_FILE);
