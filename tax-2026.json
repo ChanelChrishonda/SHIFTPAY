@@ -1,0 +1,252 @@
+{
+  "_about": "ShiftWorkPay tax numbers for 2026. Update this file each January; the app code doesn't need to change.",
+  "_sources": {
+    "federal": "IRS Rev. Proc. 2025-32 (2026 brackets & standard deduction); Pub. 15-T percentage method",
+    "fica": "SSA 2026 wage base $184,500; SS 6.2%, Medicare 1.45%",
+    "indiana": "Indiana DOR: 2.95% for 2026; WH-4 exemptions $1,000 / $1,500 / $3,000",
+    "states": "Flat-rate states are exact; graduated states are a rough average the user can override",
+    "reciprocity": "Patriot Software reciprocity list, checked Oct 2026"
+  },
+  "taxYear": 2026,
+  "federal": {
+    "rates": [
+      0.1,
+      0.12,
+      0.22,
+      0.24,
+      0.32,
+      0.35,
+      0.37
+    ],
+    "single": {
+      "std": 16100,
+      "br": [
+        0,
+        12400,
+        50400,
+        105700,
+        201775,
+        256225,
+        640600
+      ]
+    },
+    "mfj": {
+      "std": 32200,
+      "br": [
+        0,
+        24800,
+        100800,
+        211400,
+        403550,
+        512450,
+        768700
+      ]
+    },
+    "hoh": {
+      "std": 24150,
+      "br": [
+        0,
+        17700,
+        67450,
+        105700,
+        201750,
+        256200,
+        640600
+      ]
+    },
+    "childCredit": 2200,
+    "otherCredit": 500,
+    "ssRate": 0.062,
+    "medRate": 0.0145
+  },
+  "states": {
+    "Alabama": 0.04,
+    "Alaska": 0,
+    "Arizona": 0.025,
+    "Arkansas": 0.039,
+    "California": 0.05,
+    "Colorado": 0.044,
+    "Connecticut": 0.05,
+    "Delaware": 0.05,
+    "District of Columbia": 0.06,
+    "Florida": 0,
+    "Georgia": 0.0519,
+    "Hawaii": 0.07,
+    "Idaho": 0.053,
+    "Illinois": 0.0495,
+    "Indiana": 0.0295,
+    "Iowa": 0.038,
+    "Kansas": 0.052,
+    "Kentucky": 0.035,
+    "Louisiana": 0.03,
+    "Maine": 0.06,
+    "Maryland": 0.0475,
+    "Massachusetts": 0.05,
+    "Michigan": 0.0425,
+    "Minnesota": 0.06,
+    "Mississippi": 0.044,
+    "Missouri": 0.045,
+    "Montana": 0.055,
+    "Nebraska": 0.05,
+    "Nevada": 0,
+    "New Hampshire": 0,
+    "New Jersey": 0.045,
+    "New Mexico": 0.045,
+    "New York": 0.055,
+    "North Carolina": 0.0399,
+    "North Dakota": 0.015,
+    "Ohio": 0.0275,
+    "Oklahoma": 0.045,
+    "Oregon": 0.08,
+    "Pennsylvania": 0.0307,
+    "Rhode Island": 0.0475,
+    "South Carolina": 0.05,
+    "South Dakota": 0,
+    "Tennessee": 0,
+    "Texas": 0,
+    "Utah": 0.045,
+    "Vermont": 0.06,
+    "Virginia": 0.05,
+    "Washington": 0,
+    "West Virginia": 0.045,
+    "Wisconsin": 0.053,
+    "Wyoming": 0
+  },
+  "flatStates": [
+    "Arizona",
+    "Colorado",
+    "Idaho",
+    "Illinois",
+    "Indiana",
+    "Iowa",
+    "Kentucky",
+    "Louisiana",
+    "Michigan",
+    "North Carolina",
+    "Pennsylvania",
+    "Utah",
+    "Massachusetts",
+    "Ohio",
+    "Georgia",
+    "Mississippi"
+  ],
+  "reciprocity": {
+    "Arizona": [
+      "California",
+      "Indiana",
+      "Oregon",
+      "Virginia"
+    ],
+    "District of Columbia": [
+      "Maryland",
+      "Virginia"
+    ],
+    "Illinois": [
+      "Iowa",
+      "Kentucky",
+      "Michigan",
+      "Wisconsin"
+    ],
+    "Indiana": [
+      "Kentucky",
+      "Michigan",
+      "Ohio",
+      "Pennsylvania",
+      "Wisconsin"
+    ],
+    "Iowa": [
+      "Illinois"
+    ],
+    "Kentucky": [
+      "Illinois",
+      "Indiana",
+      "Michigan",
+      "Ohio",
+      "Virginia",
+      "West Virginia",
+      "Wisconsin"
+    ],
+    "Maryland": [
+      "District of Columbia",
+      "Pennsylvania",
+      "Virginia",
+      "West Virginia"
+    ],
+    "Michigan": [
+      "Illinois",
+      "Indiana",
+      "Kentucky",
+      "Minnesota",
+      "Ohio",
+      "Wisconsin"
+    ],
+    "Minnesota": [
+      "Michigan",
+      "North Dakota"
+    ],
+    "Montana": [
+      "North Dakota"
+    ],
+    "New Jersey": [
+      "Pennsylvania"
+    ],
+    "North Dakota": [
+      "Minnesota",
+      "Montana"
+    ],
+    "Ohio": [
+      "Indiana",
+      "Kentucky",
+      "Michigan",
+      "Pennsylvania",
+      "West Virginia"
+    ],
+    "Pennsylvania": [
+      "Indiana",
+      "Maryland",
+      "New Jersey",
+      "Ohio",
+      "Virginia",
+      "West Virginia"
+    ],
+    "Virginia": [
+      "District of Columbia",
+      "Kentucky",
+      "Maryland",
+      "Pennsylvania",
+      "West Virginia"
+    ],
+    "West Virginia": [
+      "Kentucky",
+      "Maryland",
+      "Ohio",
+      "Pennsylvania",
+      "Virginia"
+    ],
+    "Wisconsin": [
+      "Illinois",
+      "Indiana",
+      "Kentucky",
+      "Michigan"
+    ]
+  },
+  "reciprocityForms": {
+    "Arizona": "WEC",
+    "District of Columbia": "D-4A",
+    "Illinois": "IL-W-5-NR",
+    "Indiana": "WH-47",
+    "Iowa": "44-016",
+    "Kentucky": "42A809",
+    "Maryland": "MW507",
+    "Michigan": "MI-W4",
+    "Minnesota": "MWR",
+    "Montana": "MW-4",
+    "New Jersey": "NJ-165",
+    "North Dakota": "NDW-R",
+    "Ohio": "IT 4NR",
+    "Pennsylvania": "REV-419",
+    "Virginia": "VA-4",
+    "West Virginia": "WV/IT-104NR",
+    "Wisconsin": "W-220"
+  }
+}
