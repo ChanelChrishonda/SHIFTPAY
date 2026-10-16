@@ -1,7 +1,7 @@
 // app.js
 // Click / typing handlers + startup. Loads last.
-// TODO: pay stub checker (compare stub hours to logged hours) - top feature request.
-// TODO: semi-monthly pay. Day grid only works for weekly / every 2 weeks right now.
+// TODO: pay stub checker (compare stub hours to logged hours) - top feature request. So far there is a $100 difference with ShiftWorkPay showing around a $100 increase in net amount.
+// TODO: semi-monthly (ex.1st/15th) and monthly pay (Daycare providers in some states/jurisdictions). Only works for weekly / every 2 weeks right now. 
 
 /* ===================== EVENTS ===================== */
 document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;openDay=null;render();window.scrollTo(0,0);});
