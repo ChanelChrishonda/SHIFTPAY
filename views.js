@@ -223,7 +223,7 @@ function viewSetup(){
   return `
   <section class="card form"><h2>Pay</h2>
     <div class="row"><label for="rate">Base hourly rate</label><input id="rate" data-s="rate" inputmode="decimal" value="${s.rate}"></div>
-    <div class="row"><label for="freq">Paid every</label><select id="freq" data-s="freq">${opt(26,s.freq,"2 weeks")}${opt(52,s.freq,"Week")}</select></div>
+    <div class="row"><label for="freq">Paid every</label><select id="freq" data-s="freq">${opt(26,s.freq,"2 weeks")}${opt(52,s.freq,"Week")}${opt(26,s.freq,"Semi-Monthly")}${opt(26,s.freq,"Monthly")}</select></div>
     <div class="row"><label for="anchor">A period start date<small>Any past period's first day</small></label><input id="anchor" type="date" data-s="anchor" value="${s.anchor}"></div>
     <div class="row"><label for="payLag">Payday is how many days after a period ends?</label><input id="payLag" data-s="payLag" inputmode="numeric" value="${s.payLag}"></div>
   </section>
