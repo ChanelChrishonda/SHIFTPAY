@@ -91,7 +91,7 @@ const EXAMPLE = () => {
 function defaultSetup(){
   return {
     rate:25.00, types:defaultTypes(), banks:defaultBanks(iso(new Date())),
-    freq:26, anchor:"2026-07-27", payLag:15,
+    freq:26, anchor:"2026-10-05", payLag:15,
     status:"single", step2:false, kids:0, others:0, s4a:0, s4b:0, s4c:0, exempt:false,
     state:"Indiana", stateOverride:"", county:"Lake County", countyRate:0.015,
     inPersonal:1, inAddl:0, inAdopt:0, stateExtra:0, countyExtra:0,
